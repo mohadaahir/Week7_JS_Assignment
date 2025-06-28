@@ -51,3 +51,103 @@
 // 🌟 BONUS TIP:
 // 🎨 Style your cards using CSS to make them look polished!
 // 🤖 Try experimenting with different GitHub profiles!
+
+// STEP 1: List of GitHub API URLs for the users
+const userUrls = [
+  'https://api.github.com/users/naqib-axmed',
+  'https://api.github.com/users/jamaal-Abdirahem',
+  'https://api.github.com/users/mohadaahir'
+];
+
+// Helper to get the .cards container
+const cardsContainer = document.querySelector('.cards');
+
+// Fetch user data and their followers, then append cards
+userUrls.forEach(url => {
+  axios.get(url)
+    .then(response => {
+      const userData = response.data;
+      // Log the response data to inspect its structure
+      console.log('User data:', userData);
+
+      // Create and append the main user card
+      const card = createGithubCard(userData);
+      cardsContainer.appendChild(card);
+
+      // STEP 4: Fetch followers for this user
+      axios.get(userData.userUrls )
+        .then(followersResponse => {
+          const followers = followersResponse.data;
+          // Log the followers data
+          console.log(`Followers for ${userData.login}:`, followers);
+
+          // For each follower, fetch their full user data and create a card
+          followers.forEach(follower => {
+            axios.get(userUrls )
+              .then(followerDetailResponse => {
+                const followerData = followerDetailResponse.data;
+                const followerCard = createGithubCard(followerData);
+                cardsContainer.appendChild(followerCard);
+              })
+              .catch(err => {
+                console.error('Error fetching follower details:', err);
+              });
+          });
+        })
+        .catch(err => {
+          console.error('Error fetching followers:', err);
+        });
+    })
+    .catch(error => {
+      console.error('Error fetching GitHub user data:', error);
+    });
+});
+
+// STEP 2: Function to build the card
+function createGithubCard(user) {
+  const card = document.createElement('div');
+  card.classList.add('card');
+
+  const avatar = document.createElement('img');
+  avatar.src = user.avatar_url;
+  avatar.alt = `${user.name || user.login}'s avatar`;
+
+  const cardInfo = document.createElement('div');
+  cardInfo.classList.add('card-info');
+
+  const name = document.createElement('h3');
+  name.classList.add('name');
+  name.textContent = user.name || 'No Name Provided';
+
+  const username = document.createElement('p');
+  username.classList.add('username');
+  username.textContent = user.login;
+
+  const location = document.createElement('p');
+  location.textContent = `Location: ${user.location || 'Not Available'}`;
+
+  const profile = document.createElement('p');
+  profile.innerHTML = `Profile: <a href="${user.html_url}" target="_blank">${user.html_url}</a>`;
+
+  const followers = document.createElement('p');
+  followers.textContent = `Followers: ${user.followers}`;
+
+  const following = document.createElement('p');
+  following.textContent = `Following: ${user.following}`;
+
+  const bio = document.createElement('p');
+  bio.textContent = `Bio: ${user.bio || 'No bio available.'}`;
+
+  cardInfo.appendChild(name);
+  cardInfo.appendChild(username);
+  cardInfo.appendChild(location);
+  cardInfo.appendChild(profile);
+  cardInfo.appendChild(followers);
+  cardInfo.appendChild(following);
+  cardInfo.appendChild(bio);
+
+  card.appendChild(avatar);
+  card.appendChild(cardInfo);
+
+  return card;
+}
